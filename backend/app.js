@@ -21,6 +21,38 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+// OMDB-hakureitti
+app.get("/api/search", async (req, res) => {
+  const query = req.query.q;
+  const apiKey = process.env.OMDB_API_KEY;
+
+  if (!query) {
+    return res.status(400).json({ error: "Missing query parameter q" });
+  }
+
+  if (!apiKey) {
+    return res.status(500).json({ error: "OMDB_API_KEY is not set in .env" });
+  }
+
+  try {
+    const url = `https://www.omdbapi.com/?apikey=${apiKey}&s=${encodeURIComponent(
+      query
+    )}&type=movie`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.Response === "False") {
+      return res.status(404).json({ error: data.Error || "No movies found" });
+    }
+
+    return res.json(data);
+  } catch (err) {
+    console.error("Error fetching OMDB:", err);
+    return res.status(500).json({ error: "Failed to fetch from OMDB" });
+  }
+});
+
 // Hae katsotut
 app.get("/api/watched", (req, res) => {
   res.json(watchedMovies);
