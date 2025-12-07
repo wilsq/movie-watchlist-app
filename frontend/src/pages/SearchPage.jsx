@@ -6,6 +6,13 @@ function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Modal state-muuttujat:
+  const [showModal, setShowModal] = useState(false);
+  const [selectedMovieId, setSelectedMovieId] = useState(null);
+  const [movieDetails, setMovieDetails] = useState(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+  const [detailsError, setdetailsError] = useState("");
+
   const handlesubmit = async (e) => {
     e.preventDefault(); // estetään formia reloadaamasta sivua
 
@@ -13,8 +20,8 @@ function SearchPage() {
     if (!query) return; // tyhjällä ei haeta
 
     setLoading(true);
-    setError("");
-    setResults([]);
+    setError(""); // Poistaa vanhat errorit jos oli
+    setResults([]); // tyhjentää vanhat hakutulokset ennen uutta hakua
 
     try {
       const res = await fetch(
@@ -80,7 +87,13 @@ function SearchPage() {
           {results.map((movie) => (
             <article
               key={movie.imdbID}
-              className="flex gap-4 rounded-1g border border-slate-800 bg-slate-900/60 p-3"
+              onClick={() => {
+                setSelectedMovieId(movie.imdbID);
+                setShowModal(true);
+                setMovieDetails(null);
+                setdetailsError("");
+              }}
+              className="flex gap-4 rounded-lg border border-slate-800 bg-slate-900/60 p-3 hover:outline-none hover:ring-2 hover:ring-emerald-500"
             >
               {/* Poster-kuva, jos saatavilla */}
               {movie.Poster && movie.Poster !== "N/A" && (

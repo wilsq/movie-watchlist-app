@@ -53,6 +53,32 @@ app.get("/api/search", async (req, res) => {
   }
 });
 
+// Yksittäinen elokuva haku OMDB:stä
+app.get("/api/movie/:id", async (req, res) => {
+  const { id } = req.params;
+  const apikey = process.env.OMDB_API_KEY;
+
+  if (!apikey) {
+    return res.status(500).json({ error: "OMDB_API_KEY is not set in .env" });
+  }
+
+  try {
+    const url = `https://www.omdbapi.com/?apikey=${apiKey}&i=${id}&plot=short`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.Response === "False") {
+      return res.status(404).json({ error: "Movie not found" });
+    }
+
+    return res.json(data);
+  } catch (err) {
+    console.error("Error fetching detailed movie:", err);
+    return res.status(500).json({ error: "Failed to fetch movie details" });
+  }
+});
+
 // Hae katsotut
 app.get("/api/watched", (req, res) => {
   res.json(watchedMovies);
