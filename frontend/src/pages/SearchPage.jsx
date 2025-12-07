@@ -118,6 +118,68 @@ function SearchPage() {
           ))}
         </section>
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          {/* Modal-kortti */}
+          <div className="w-full max-w-lg rounded-xl bg-slate-900 border border-slate-700 p-6 shadow-xl relative">
+            {/* Close button */}
+            <button
+              onClick={() => {
+                setShowModal(false);
+                selectedMovieId(null);
+                setMovieDetails(null);
+              }}
+              className="absolute right-3 top-3 rounded-full px-2 py-1 text-sm text-slate-300 hover:bg-slate-800"
+            >
+              X
+            </button>
+
+            {/* Loading-tila */}
+            {loadingDetails && (
+              <p className="text-slate-300 text-center py-6">
+                Loading details...
+              </p>
+            )}
+
+            {/* Error-tila */}
+            {detailsError && (
+              <p className="text-red-400 text-center py-6">{detailsError}</p>
+            )}
+
+            {/* Sisältö */}
+            {movieDetails && (
+              <>
+                <div className="flex gap-4">
+                  {movieDetails.Poster && movieDetails.Poster !== "N/A" && (
+                    <img
+                      src={movieDetails.Poster}
+                      alt={movieDetails.Title}
+                      className="h-32 w-24 rounded object-cover"
+                    />
+                  )}
+
+                  <div>
+                    <h2 className="text-xl font-semibold text-slate-100">
+                      {movieDetails.Title}
+                    </h2>
+                    <p className="text-sm text-slate-400">
+                      {movieDetails.Year} • {movieDetails.Genre}
+                    </p>
+
+                    <p className="text-xs text-slate-500 mt-1">
+                      {movieDetails.Runtime}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4 text-sm text-slate-300">
+                  <p>{movieDetails.Plot}</p>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   );
 }
