@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function SearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -12,6 +12,35 @@ function SearchPage() {
   const [movieDetails, setMovieDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [detailsError, setdetailsError] = useState("");
+
+  useEffect(() => {
+    if (!selectedMovieId) return;
+
+    const fetchDetails = async () => {
+      setLoadingDetails(true);
+      setdetailsError("");
+      setMovieDetails(null);
+
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/movie/${selectedMovieId}`
+        );
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to load details");
+        }
+
+        setMovieDetails(data);
+      } catch (err) {
+        setdetailsError(err.message || "Unexpected error");
+      } finally {
+        setLoadingDetails(false);
+      }
+    };
+
+    fetchDetails();
+  }, [selectedMovieId]);
 
   const handlesubmit = async (e) => {
     e.preventDefault(); // estetään formia reloadaamasta sivua
@@ -120,17 +149,20 @@ function SearchPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn">
           {/* Modal-kortti */}
-          <div className="w-full max-w-lg rounded-xl bg-slate-900 border border-slate-700 p-6 shadow-xl relative">
+          <div
+            className="relative w-full max-w-2xl rounded-xl bg-slate-900 border border-slate-700 p-6 shadow-xl
+"
+          >
             {/* Close button */}
             <button
               onClick={() => {
                 setShowModal(false);
-                selectedMovieId(null);
+                setSelectedMovieId(null);
                 setMovieDetails(null);
               }}
-              className="absolute right-3 top-3 rounded-full px-2 py-1 text-sm text-slate-300 hover:bg-slate-800"
+              className="absolute right-3 top-3 rounded-full p-2 bg-slate-800 hover:bg-emerald-600 transition text-slate-300 hover:text-slate-900"
             >
               X
             </button>
@@ -155,25 +187,41 @@ function SearchPage() {
                     <img
                       src={movieDetails.Poster}
                       alt={movieDetails.Title}
-                      className="h-32 w-24 rounded object-cover"
+                      className="h-56 w-40 rounded object-cover shadow-lg flex-shrink-0"
                     />
                   )}
 
                   <div>
-                    <h2 className="text-xl font-semibold text-slate-100">
-                      {movieDetails.Title}
+                    <h2 className="text-xl font-semibold text-slate-100 truncate">
+                      {movieDetails.Title}{" "}
+                      <span className="inline-block flex-shrink-0 rounded bg-slate-800 px-2 py-0.5 text-sm text-emerald-300">
+                        ⭐ {movieDetails.imdbRating}
+                      </span>
                     </h2>
+
                     <p className="text-sm text-slate-400">
                       {movieDetails.Year} • {movieDetails.Genre}
                     </p>
-
-                    <p className="text-xs text-slate-500 mt-1">
-                      {movieDetails.Runtime}
-                    </p>
                   </div>
                 </div>
-                <div className="mt-4 text-sm text-slate-300">
+                <div className="mt-4 text-[15px] leading-relaxed text-slate-300 max-w-prose">
                   <p>{movieDetails.Plot}</p>
+                </div>
+                <div className="mt-6 space-y-1 text-sm text-slate-400">
+                  <p>
+                    <span className="font-medium text-slate-300">
+                      Director:
+                    </span>{" "}
+                    {movieDetails.Director}
+                  </p>
+                  <p>
+                    <span className="font-medium text-slate-300">Runtime:</span>{" "}
+                    {movieDetails.Runtime}
+                  </p>
+                  <p>
+                    <span className="font-medium text-slate-300">Actors:</span>{" "}
+                    {movieDetails.Actors}
+                  </p>
                 </div>
               </>
             )}

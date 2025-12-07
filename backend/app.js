@@ -56,9 +56,9 @@ app.get("/api/search", async (req, res) => {
 // Yksittäinen elokuva haku OMDB:stä
 app.get("/api/movie/:id", async (req, res) => {
   const { id } = req.params;
-  const apikey = process.env.OMDB_API_KEY;
+  const apiKey = process.env.OMDB_API_KEY;
 
-  if (!apikey) {
+  if (!apiKey) {
     return res.status(500).json({ error: "OMDB_API_KEY is not set in .env" });
   }
 
