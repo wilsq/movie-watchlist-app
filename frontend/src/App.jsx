@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SearchPage from "./pages/SearchPage";
+import WatchedPage from "./pages/WatchedPage";
 import Navbar from "./components/Navbar";
 
 function App() {
@@ -9,7 +10,7 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<SearchPage />} />
-          {/* <Route path="/watched" element={<WatchedPage />} /> */}
+          <Route path="/watched" element={<WatchedPage />} />
         </Routes>
       </div>
     </BrowserRouter>

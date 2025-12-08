@@ -42,6 +42,35 @@ function SearchPage() {
     fetchDetails();
   }, [selectedMovieId]);
 
+  const addToWatched = async (movie) => {
+    console.log("RECEIVED MOVIE:", movie);
+
+    try {
+      const res = await fetch("http://localhost:5000/api/watched", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          imdbID: movie.imdbID,
+          title: movie.Title,
+          year: movie.Year,
+          poster: movie.Poster,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        console.error("Failed to add:", data.error);
+        return;
+      }
+
+      console.log("Added to watched:", movie.Title);
+    } catch (err) {
+      console.error("Add failed:", err);
+    }
+  };
+
   const handlesubmit = async (e) => {
     e.preventDefault(); // estetään formia reloadaamasta sivua
 
@@ -141,7 +170,15 @@ function SearchPage() {
                   <p className="text-xs text-slate-400">{movie.Year}</p>
                 </div>
 
-                {/* Tähän tulee myöhemmin "Add to watched" -nappi */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addToWatched(movie);
+                  }}
+                  className="mt-3 w-fit rounded-md bg-emerald-600 px-3 py-1 text-xs font-medium text-slate-900 hover:bg-emerald-500"
+                >
+                  Add to watched
+                </button>
               </div>
             </article>
           ))}
