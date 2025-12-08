@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
+import MovieModal from "../components/MovieModal";
+import { useToast } from "../components/ToastContext";
 
 function WatchedPage() {
   const [watched, setWatched] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [selectedMovieId, setSelectedMovieId] = useState(null);
+
+  const { showToast } = useToast();
 
   useEffect(() => {
     const fetchWatched = async () => {
@@ -26,7 +32,7 @@ function WatchedPage() {
     fetchWatched();
   }, []);
 
-  const removeMovie = async (id) => {
+  const removeMovie = async (id, title) => {
     try {
       const res = await fetch(`http://localhost:5000/api/watched/${id}`, {
         method: "DELETE",
@@ -37,8 +43,10 @@ function WatchedPage() {
       }
 
       setWatched((prev) => prev.filter((m) => m.id !== id));
+      showToast(`Removed "${title}" from watched`, "success");
     } catch (err) {
       console.error(err);
+      showToast(err.message || "Failed to remove movie", "error");
     }
   };
 
@@ -59,6 +67,9 @@ function WatchedPage() {
         {watched.map((movie) => (
           <article
             key={movie.id}
+            onClick={() => {
+              setSelectedMovieId(movie.id);
+            }}
             className="flex items-center gap-4 bg-slate-900 border border-slate-800 p-4 rounded hover:outline-none hover:ring-2 hover:ring-emerald-500"
           >
             {/* Poster */}
@@ -75,7 +86,10 @@ function WatchedPage() {
 
             {/* Remove button */}
             <button
-              onClick={() => removeMovie(movie.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                removeMovie(movie.id, movie.title);
+              }}
               className="rounded bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-500"
             >
               Remove
@@ -83,6 +97,11 @@ function WatchedPage() {
           </article>
         ))}
       </section>
+
+      <MovieModal
+        movieId={selectedMovieId}
+        onClose={() => setSelectedMovieId(null)}
+      />
     </main>
   );
 }

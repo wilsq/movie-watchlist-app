@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import MovieModal from "../components/MovieModal";
+import { useToast } from "../components/ToastContext";
 
 function SearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -8,12 +9,13 @@ function SearchPage() {
   const [error, setError] = useState("");
 
   // Modal state-muuttujat:
-
   const [selectedMovieId, setSelectedMovieId] = useState(null);
 
-  const addToWatched = async (movie) => {
-    console.log("RECEIVED MOVIE:", movie);
+  const [toast, setToast] = useState(null);
 
+  const { showToast } = useToast();
+
+  const addToWatched = async (movie) => {
     try {
       const res = await fetch("http://localhost:5000/api/watched", {
         method: "POST",
@@ -34,9 +36,10 @@ function SearchPage() {
         return;
       }
 
-      console.log("Added to watched:", movie.Title);
+      showToast(`Added "${movie.Title}" to watched`, "success");
     } catch (err) {
       console.error("Add failed:", err);
+      showToast(err.message || "Failed to add movie", "error");
     }
   };
 
