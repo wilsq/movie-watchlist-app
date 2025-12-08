@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import MovieModal from "../components/MovieModal";
 
 function SearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -7,40 +8,8 @@ function SearchPage() {
   const [error, setError] = useState("");
 
   // Modal state-muuttujat:
-  const [showModal, setShowModal] = useState(false);
+
   const [selectedMovieId, setSelectedMovieId] = useState(null);
-  const [movieDetails, setMovieDetails] = useState(null);
-  const [loadingDetails, setLoadingDetails] = useState(false);
-  const [detailsError, setdetailsError] = useState("");
-
-  useEffect(() => {
-    if (!selectedMovieId) return;
-
-    const fetchDetails = async () => {
-      setLoadingDetails(true);
-      setdetailsError("");
-      setMovieDetails(null);
-
-      try {
-        const res = await fetch(
-          `http://localhost:5000/api/movie/${selectedMovieId}`
-        );
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.error || "Failed to load details");
-        }
-
-        setMovieDetails(data);
-      } catch (err) {
-        setdetailsError(err.message || "Unexpected error");
-      } finally {
-        setLoadingDetails(false);
-      }
-    };
-
-    fetchDetails();
-  }, [selectedMovieId]);
 
   const addToWatched = async (movie) => {
     console.log("RECEIVED MOVIE:", movie);
@@ -147,9 +116,6 @@ function SearchPage() {
               key={movie.imdbID}
               onClick={() => {
                 setSelectedMovieId(movie.imdbID);
-                setShowModal(true);
-                setMovieDetails(null);
-                setdetailsError("");
               }}
               className="flex gap-4 rounded-lg border border-slate-800 bg-slate-900/60 p-3 hover:outline-none hover:ring-2 hover:ring-emerald-500"
             >
@@ -175,7 +141,7 @@ function SearchPage() {
                     e.stopPropagation();
                     addToWatched(movie);
                   }}
-                  className="mt-3 w-fit rounded-md bg-emerald-600 px-3 py-1 text-xs font-medium text-slate-900 hover:bg-emerald-500"
+                  className="mt-3 w-fit rounded-md bg-emerald-500 px-3 py-1 text-xs font-medium text-slate-900 hover:bg-emerald-400"
                 >
                   Add to watched
                 </button>
@@ -185,86 +151,10 @@ function SearchPage() {
         </section>
       </div>
 
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn">
-          {/* Modal-kortti */}
-          <div
-            className="relative w-full max-w-2xl rounded-xl bg-slate-900 border border-slate-700 p-6 shadow-xl
-"
-          >
-            {/* Close button */}
-            <button
-              onClick={() => {
-                setShowModal(false);
-                setSelectedMovieId(null);
-                setMovieDetails(null);
-              }}
-              className="absolute right-3 top-3 rounded-full p-2 bg-slate-800 hover:bg-emerald-600 transition text-slate-300 hover:text-slate-900"
-            >
-              X
-            </button>
-
-            {/* Loading-tila */}
-            {loadingDetails && (
-              <p className="text-slate-300 text-center py-6">
-                Loading details...
-              </p>
-            )}
-
-            {/* Error-tila */}
-            {detailsError && (
-              <p className="text-red-400 text-center py-6">{detailsError}</p>
-            )}
-
-            {/* Sisältö */}
-            {movieDetails && (
-              <>
-                <div className="flex gap-4">
-                  {movieDetails.Poster && movieDetails.Poster !== "N/A" && (
-                    <img
-                      src={movieDetails.Poster}
-                      alt={movieDetails.Title}
-                      className="h-56 w-40 rounded object-cover shadow-lg flex-shrink-0"
-                    />
-                  )}
-
-                  <div>
-                    <h2 className="text-xl font-semibold text-slate-100 truncate">
-                      {movieDetails.Title}{" "}
-                      <span className="inline-block flex-shrink-0 rounded bg-slate-800 px-2 py-0.5 text-sm text-emerald-300">
-                        ⭐ {movieDetails.imdbRating}
-                      </span>
-                    </h2>
-
-                    <p className="text-sm text-slate-400">
-                      {movieDetails.Year} • {movieDetails.Genre}
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-4 text-[15px] leading-relaxed text-slate-300 max-w-prose">
-                  <p>{movieDetails.Plot}</p>
-                </div>
-                <div className="mt-6 space-y-1 text-sm text-slate-400">
-                  <p>
-                    <span className="font-medium text-slate-300">
-                      Director:
-                    </span>{" "}
-                    {movieDetails.Director}
-                  </p>
-                  <p>
-                    <span className="font-medium text-slate-300">Runtime:</span>{" "}
-                    {movieDetails.Runtime}
-                  </p>
-                  <p>
-                    <span className="font-medium text-slate-300">Actors:</span>{" "}
-                    {movieDetails.Actors}
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      <MovieModal
+        movieId={selectedMovieId}
+        onClose={() => setSelectedMovieId(null)}
+      />
     </main>
   );
 }
