@@ -1,15 +1,14 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { docClient, WATCHED_TABLE, DEMO_USER_ID } from "./dynamoClient.js";
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-// Väliaikainen tietokanta
-let watchedMovies = [];
 
 // Helper funktio testejä varten
 export function _resetWatchedMovies() {
@@ -79,9 +78,23 @@ app.get("/api/movie/:id", async (req, res) => {
   }
 });
 
-// Hae katsotut
-app.get("/api/watched", (req, res) => {
-  res.json(watchedMovies);
+// Hae katsotut DynamoDB:stä
+app.get("/api/watched", async (req, res) => {
+  try {
+    const command = new QueryCommand({
+      TableName: WATCHED_TABLE,
+      KeyConditionExpression: "userid = :uid",
+      ExpressionAttributeValues: {
+        ":uid": DEMO_USER_ID,
+      },
+    });
+
+    const result = await docClient.send(command);
+    res.json(result.Items || []);
+  } catch (err) {
+    console.error("Error querying watched movies:", err);
+    res.status(500).json({ error: "Failed to load watched movies" });
+  }
 });
 
 // Lisää katsottu
