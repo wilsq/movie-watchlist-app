@@ -9,8 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Väliaikainen tietokanta
-let watchedMovies = [];
+const DEMO_USER_ID = 1;
 
 // Helper funktio testejä varten
 export function _resetWatchedMovies() {
@@ -97,11 +96,21 @@ app.get("/api/watched", async (req, res) => {
     const userId = 1;
 
     const result = await query(
-      `SELECT * FROM watched_movies WHERE user_id = $1 ORDER BY created_at DESC`,
+      `SELECT * FROM watched_movies WHERE user_id = $1 ORDER BY added_at DESC`,
       [userId]
     );
 
-    res.json(result.rows);
+    const movies = result.rows.map((row) => ({
+      id: row.imdb_id,
+      title: row.title,
+      year: row.year,
+      poster: row.poster,
+      addedAt: row.added_at,
+    }));
+
+    console.log("PG result:", result);
+
+    res.json(movies);
   } catch (err) {
     console.error("Error loading watched movies", err);
     res.status(500).json({ error: "Failed to load watched movies" });
