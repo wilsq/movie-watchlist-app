@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { query } from "./db";
+import { query } from "./db.js";
 
 dotenv.config();
 
@@ -20,6 +20,17 @@ export function _resetWatchedMovies() {
 // Health-check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
+});
+
+// DB-health: Kokeillaan yhteys postgresiin
+app.get("/api/db-health", async (req, res) => {
+  try {
+    const result = await query("SELECT NOW() as now");
+    res.json({ ok: true, now: result.rows[0].now });
+  } catch (err) {
+    console.error("DB health check failed:", err);
+    res.status(500).json({ ok: false, error: "DB connection failed" });
+  }
 });
 
 // OMDB-hakureitti
@@ -81,46 +92,71 @@ app.get("/api/movie/:id", async (req, res) => {
 });
 
 // Hae katsotut
-app.get("/api/watched", (req, res) => {
-  res.json(watchedMovies);
+app.get("/api/watched", async (req, res) => {
+  try {
+    const userId = 1;
+
+    const result = await query(
+      `SELECT * FROM watched_movies WHERE user_id = $1 ORDER BY created_at DESC`,
+      [userId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error loading watched movies", err);
+    res.status(500).json({ error: "Failed to load watched movies" });
+  }
 });
 
 // Lisää katsottu
-app.post("/api/watched", (req, res) => {
+app.post("/api/watched", async (req, res) => {
+  const userId = 1; // Myöhemmin authista.
   const { imdbID, title, year, poster } = req.body;
 
   if (!imdbID || !title) {
     return res.status(400).json({ error: "Missing imdbID or title" });
   }
 
-  const exists = watchedMovies.some((m) => m.id === imdbID);
-  if (exists) {
-    return res.status(409).json({ error: "Movie already exists" });
+  try {
+    const exists = await query(
+      `SELECT 1 FROM watched_movies WHERE user_id = $1 AND imdb_id = $2`,
+      [userId, imdbID]
+    );
+
+    if (exists.rowCount > 0) {
+      return res.status(409).json({ error: "Movie already exists" });
+    }
+
+    const result = await query(
+      `INSERT INTO watched_movies (user_id, imdb_id, title, year, poster) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [userId, imdbID, title, year, poster]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error("Error inserting movie", err);
+    res.status(500).json({ error: "Failed to add movie" });
   }
-
-  const newMovie = {
-    id: imdbID,
-    title,
-    year,
-    poster,
-    addedAt: new Date().toISOString(),
-  };
-
-  watchedMovies.push(newMovie);
-  return res.status(201).json(newMovie);
 });
 
 // Poista elokuva
-app.delete("/api/watched/:id", (req, res) => {
-  const { id } = req.params;
+app.delete("/api/watched/:id", async (req, res) => {
+  const userId = 1;
+  const movieId = req.params.id;
 
-  const index = watchedMovies.findIndex((m) => m.id === id);
-  if (index === -1) {
-    return res.status(404).json({ error: "Movie not found" });
+  try {
+    const result = await query(
+      "DELETE FROM watched_movies WHERE user_id = $1 AND imdb_id = $2",
+      [userId, movieId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Movie not found" });
+    }
+    res.status(204).send();
+  } catch (err) {
+    console.error("Error deleting movie", err);
+    res.status(500).json({ error: "Failed to delete movie" });
   }
-
-  watchedMovies.splice(index, 1);
-  return res.status(204).send();
 });
 
 export default app;
