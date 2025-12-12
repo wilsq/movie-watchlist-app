@@ -3,10 +3,14 @@ import jwt from "jsonwebtoken";
 export function requireAuth(req, res, next) {
   const header = req.headers.authorization;
 
-  if (!header || !header.startsWith("Bearer")) {
+  if (!header || !header.startsWith("Bearer ")) {
     return res
       .status(401)
       .json({ error: "Missing or invalid authorization header" });
+  }
+
+  if (!process.env.JWT_SECRET) {
+    return res.status(500).json({ error: "JWT_SECRET not configured" });
   }
 
   const token = header.slice("Bearer ".length);

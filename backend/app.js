@@ -9,7 +9,13 @@ import { requireAuth } from "./middleware/auth.js";
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 const DEMO_USER_ID = 1;
@@ -108,7 +114,7 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(500).json({ error: "JWT_SECRET is not set" });
     }
 
-    const token = jwt.sign({ userId: user.id, email: user.email }, secret, {
+    const token = jwt.sign({ userId: user.id }, secret, {
       expiresIn: "7d",
     });
 
