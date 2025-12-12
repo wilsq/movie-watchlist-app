@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { query } from "./db.js";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 
@@ -29,6 +31,90 @@ app.get("/api/db-health", async (req, res) => {
   } catch (err) {
     console.error("DB health check failed:", err);
     res.status(500).json({ ok: false, error: "DB connection failed" });
+  }
+});
+
+// REGISTER
+app.post("/api/auth/register", async (req, res) => {
+  const { email, password } = req.body;
+
+  // Validointi
+  if (!email || !password) {
+    return res.status(400).json({ error: "Missing email or password" });
+  }
+
+  if (password.length < 8) {
+    return res
+      .status(400)
+      .json({ error: "Password must be at least 8 characters" });
+  }
+
+  try {
+    const existing = await query(`SELECT 1 FROM users WHERE email = $1`, [
+      email,
+    ]);
+    if (existing.rowCount > 0) {
+      return res.status(409).json({ error: "Email already in use" });
+    }
+
+    // Hashataan salasana
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Tallennetaan tietokantaan
+    const result = await query(
+      `INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email, created_at`,
+      [email, passwordHash]
+    );
+
+    return res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error("Register error: ", err);
+    return res.status(500).json({ error: "Failed to register" });
+  }
+});
+
+// LOGIN
+app.post("/api/auth/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: "Missing email or password" });
+  }
+
+  try {
+    // Haetaan käyttäjä
+    const result = await query(
+      `SELECT id, email, password_hash FROM users WHERE email = $1`,
+      [email]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    // Tallennetaan user variableen
+    const user = result.rows[0];
+
+    // Verrataan salasanaa hashin kanssa
+    const ok = await bcrypt.compare(password, user.password_hash);
+    if (!ok) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    // Luodaan JWT Token
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      return res.status(500).json({ error: "JWT_SECRET is not set" });
+    }
+
+    const token = jwt.sign({ userId: user.id, email: user.email }, secret, {
+      expiresIn: "7d",
+    });
+
+    return res.json({ token });
+  } catch (err) {
+    console.error("Login error: ", err);
+    return res.status(500).json({ error: "Failed to login" });
   }
 });
 
