@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { query } from "./db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { requireAuth } from "./middleware/auth.js";
 
 dotenv.config();
 
@@ -177,9 +178,9 @@ app.get("/api/movie/:id", async (req, res) => {
 });
 
 // Hae katsotut
-app.get("/api/watched", async (req, res) => {
+app.get("/api/watched", requireAuth, async (req, res) => {
   try {
-    const userId = 1;
+    const userId = req.user.id;
 
     const result = await query(
       `SELECT * FROM watched_movies WHERE user_id = $1 ORDER BY added_at DESC`,
@@ -204,8 +205,8 @@ app.get("/api/watched", async (req, res) => {
 });
 
 // Lisää katsottu
-app.post("/api/watched", async (req, res) => {
-  const userId = 1; // Myöhemmin authista.
+app.post("/api/watched", requireAuth, async (req, res) => {
+  const userId = req.user.id; // Myöhemmin authista.
   const { imdbID, title, year, poster } = req.body;
 
   if (!imdbID || !title) {
@@ -234,8 +235,8 @@ app.post("/api/watched", async (req, res) => {
 });
 
 // Poista elokuva
-app.delete("/api/watched/:id", async (req, res) => {
-  const userId = 1;
+app.delete("/api/watched/:id", requireAuth, async (req, res) => {
+  const userId = req.user.id;
   const movieId = req.params.id;
 
   try {
