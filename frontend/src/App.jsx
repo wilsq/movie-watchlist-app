@@ -4,6 +4,7 @@ import WatchedPage from "./pages/WatchedPage";
 import Navbar from "./components/Navbar";
 import { ToastProvider } from "./components/ToastContext";
 import Toast from "./components/Toast";
+import LoginPage from "./pages/LoginPage";
 
 function App() {
   return (
@@ -13,6 +14,8 @@ function App() {
           <Navbar />
           <Toast />
           <Routes>
+            <Route path="/login" element={<LoginPage />} />
+
             <Route path="/" element={<SearchPage />} />
             <Route path="/watched" element={<WatchedPage />} />
           </Routes>
