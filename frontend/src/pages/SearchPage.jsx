@@ -15,6 +15,7 @@ function SearchPage() {
 
   const { showToast } = useToast();
 
+  // ELokuvan Lisäys
   const addToWatched = async (movie) => {
     const token = localStorage.getItem("token");
 
@@ -40,9 +41,14 @@ function SearchPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        console.log("ADD WATCHED ERROR FROM BACKEND:", data);
-        console.error("Failed to add:", data.error);
-        return;
+
+        if (res.status === 409) {
+          showToast(
+            `"${movie.Title}" is already in your watched list`,
+            "error"
+          );
+          return;
+        }
       }
 
       showToast(`Added "${movie.Title}" to watched`, "success");

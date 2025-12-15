@@ -201,8 +201,6 @@ app.get("/api/watched", requireAuth, async (req, res) => {
       addedAt: row.added_at,
     }));
 
-    console.log("PG result:", result);
-
     res.json(movies);
   } catch (err) {
     console.error("Error loading watched movies", err);
@@ -212,10 +210,8 @@ app.get("/api/watched", requireAuth, async (req, res) => {
 
 // Lisää katsottu
 app.post("/api/watched", requireAuth, async (req, res) => {
-  console.log("REQ.USER =", req.user);
-
   const userId = req.user.id; // Myöhemmin authista.
-  console.log("USER ID =", userId);
+
   const { imdbID, title, year, poster } = req.body;
 
   if (!imdbID || !title) {
