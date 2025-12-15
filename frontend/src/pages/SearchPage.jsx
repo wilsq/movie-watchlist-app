@@ -15,12 +15,21 @@ function SearchPage() {
 
   const { showToast } = useToast();
 
+  // ELokuvan Lisäys
   const addToWatched = async (movie) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      showToast("Please log in to add movies", "error");
+      return;
+    }
+
     try {
       const res = await fetch("http://localhost:5000/api/watched", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           imdbID: movie.imdbID,
@@ -32,8 +41,14 @@ function SearchPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        console.error("Failed to add:", data.error);
-        return;
+
+        if (res.status === 409) {
+          showToast(
+            `"${movie.Title}" is already in your watched list`,
+            "error"
+          );
+          return;
+        }
       }
 
       showToast(`Added "${movie.Title}" to watched`, "success");
