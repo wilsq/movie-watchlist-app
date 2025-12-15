@@ -44,7 +44,14 @@ function RegisterPage() {
         onSubmit={handlesubmit}
         className="w-full max-w-sm rounded-lg border border-slate-800 bg-slate-900/60 p-6"
       >
-        <h1 className="mb-4 text-xl font-semibold text-slate-100">Register</h1>
+        <div className="mb-6 text-center">
+          <h1 className="text-2xl font-semibold text-slate-100">
+            Movie Watchlist
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Create an account to start tracking your watched movies
+          </p>
+        </div>
 
         {error && (
           <div className="mb-3 rounded-md border border-red-500 bg-red-950/40 px-3 py-2 text-sm text-red-200">
