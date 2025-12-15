@@ -114,7 +114,7 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(500).json({ error: "JWT_SECRET is not set" });
     }
 
-    const token = jwt.sign({ userId: user.id }, secret, {
+    const token = jwt.sign({ id: user.id }, secret, {
       expiresIn: "7d",
     });
 
@@ -212,7 +212,10 @@ app.get("/api/watched", requireAuth, async (req, res) => {
 
 // Lisää katsottu
 app.post("/api/watched", requireAuth, async (req, res) => {
+  console.log("REQ.USER =", req.user);
+
   const userId = req.user.id; // Myöhemmin authista.
+  console.log("USER ID =", userId);
   const { imdbID, title, year, poster } = req.body;
 
   if (!imdbID || !title) {

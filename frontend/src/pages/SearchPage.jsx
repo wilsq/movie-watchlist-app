@@ -16,6 +16,13 @@ function SearchPage() {
   const { showToast } = useToast();
 
   const addToWatched = async (movie) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      showToast("Please log in to add movies", "error");
+      return;
+    }
+
     try {
       const res = await fetch("http://localhost:5000/api/watched", {
         method: "POST",
@@ -33,6 +40,7 @@ function SearchPage() {
 
       if (!res.ok) {
         const data = await res.json();
+        console.log("ADD WATCHED ERROR FROM BACKEND:", data);
         console.error("Failed to add:", data.error);
         return;
       }

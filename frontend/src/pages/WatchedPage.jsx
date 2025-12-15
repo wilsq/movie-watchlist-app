@@ -13,6 +13,8 @@ function WatchedPage() {
 
   useEffect(() => {
     const fetchWatched = async () => {
+      const token = localStorage.getItem("token");
+
       try {
         const res = await fetch("http://localhost:5000/api/watched", {
           headers: { Authorization: `Bearer ${token}` },
@@ -35,6 +37,8 @@ function WatchedPage() {
   }, []);
 
   const removeMovie = async (id, title) => {
+    const token = localStorage.getItem("token");
+
     try {
       const res = await fetch(`http://localhost:5000/api/watched/${id}`, {
         method: "DELETE",
