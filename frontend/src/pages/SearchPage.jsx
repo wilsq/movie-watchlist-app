@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import MovieModal from "../components/MovieModal";
 import { useToast } from "../components/ToastContext";
 import { ChevronRight } from "lucide-react";
+import { X } from "lucide-react";
+import { useRef } from "react";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -17,6 +19,7 @@ function SearchPage() {
   const [toast, setToast] = useState(null);
 
   const { showToast } = useToast();
+  const inputRef = useRef(null);
 
   // ELokuvan Lisäys
   const addToWatched = async (movie) => {
@@ -99,13 +102,32 @@ function SearchPage() {
 
         {/* Hakulomake */}
         <form onSubmit={handlesubmit} className="flex gap-2 mb-6">
-          <input
-            type="text"
-            placeholder="Search by title"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          ></input>
+          <div className="relative flex-1">
+            <input
+              type="text"
+              ref={inputRef}
+              placeholder="Search by title"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 pr-10 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            ></input>
+
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTerm("");
+                  setResults([]);
+                  setError("");
+                  inputRef.current?.focus();
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition"
+                aria-label="Clear search"
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
           <button
             type="submit"
             disabled={loading}
