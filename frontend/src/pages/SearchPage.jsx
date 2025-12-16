@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import MovieModal from "../components/MovieModal";
 import { useToast } from "../components/ToastContext";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 function SearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
@@ -25,7 +27,7 @@ function SearchPage() {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/watched", {
+      const res = await fetch(`${API_BASE}/api/watched`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -70,7 +72,7 @@ function SearchPage() {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/search?q=${encodeURIComponent(query)}`
+        `${API_BASE}/api/search?q=${encodeURIComponent(query)}`
       );
 
       const data = await res.json();
