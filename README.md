@@ -100,15 +100,15 @@ Frontendin ja backendin erillinen deploy
 
 AWS-palveluiden käyttö:
 
-Amplify
+- Amplify
 
-Elastic Beanstalk
+- Elastic Beanstalk
 
-RDS
+- RDS
 
-Route 53
+- Route 53
 
-ACM (HTTPS)
+- ACM (HTTPS)
 
 CORS-konfiguraatio tuotantoympäristössä
 
