@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import MovieModal from "../components/MovieModal";
 import { useToast } from "../components/ToastContext";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 function WatchedPage() {
   const [watched, setWatched] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,7 +18,7 @@ function WatchedPage() {
       const token = localStorage.getItem("token");
 
       try {
-        const res = await fetch("http://localhost:5000/api/watched", {
+        const res = await fetch(`${API_BASE}/api/watched`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -40,7 +42,7 @@ function WatchedPage() {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch(`http://localhost:5000/api/watched/${id}`, {
+      const res = await fetch(`${API_BASE}/api/watched/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

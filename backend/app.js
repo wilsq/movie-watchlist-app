@@ -37,7 +37,7 @@ app.get("/api/db-health", async (req, res) => {
     res.json({ ok: true, now: result.rows[0].now });
   } catch (err) {
     console.error("DB health check failed:", err);
-    res.status(500).json({ ok: false, error: "DB connection failed" });
+    res.status(500).json({ ok: false, error: err.message, code: err.code });
   }
 });
 
