@@ -16,13 +16,13 @@ Demo-käyttäjä on tarkoitettu vain sovelluksen testaamiseen.
 
 Movie Watchlist on henkilökohtainen elokuvasovellus, jossa käyttäjä voi:
 
-etsiä elokuvia ulkoisesta rajapinnasta
+- etsiä elokuvia ulkoisesta rajapinnasta
 
-tarkastella elokuvien lisätietoja
+- tarkastella elokuvien lisätietoja
 
-luoda oman katsottujen elokuvien listan
+- luoda oman katsottujen elokuvien listan
 
-kirjautua sisään ja käyttää sovellusta omalla tilillään
+- kirjautua sisään ja käyttää sovellusta omalla tilillään
 
 Projekti on tehty oppimis- ja portfolio­tarkoituksessa, mutta se noudattaa oikeita tuotantokäytäntöjä.
 
