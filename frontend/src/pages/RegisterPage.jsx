@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { useToast } from "../components/ToastContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -9,6 +10,8 @@ function RegisterPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const { showToast } = useToast();
 
   const navigate = useNavigate();
 
@@ -32,7 +35,11 @@ function RegisterPage() {
         throw new Error(data.error || "Registration failed");
       }
 
-      navigate("/login");
+      showToast("Registration successful! You can now log in.", "success");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 800);
     } catch (err) {
       setError(err.message);
     } finally {

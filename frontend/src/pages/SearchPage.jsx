@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import MovieModal from "../components/MovieModal";
 import { useToast } from "../components/ToastContext";
+import { ChevronRight } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -137,7 +138,7 @@ function SearchPage() {
               onClick={() => {
                 setSelectedMovieId(movie.imdbID);
               }}
-              className="flex gap-4 rounded-lg border border-slate-800 bg-slate-900/60 p-3 hover:outline-none hover:ring-2 hover:ring-emerald-500"
+              className="group items-center flex gap-4 rounded-lg border border-slate-800 bg-slate-900/60 p-3 hover:outline-none hover:ring-2 hover:ring-emerald-500"
             >
               {/* Poster-kuva, jos saatavilla */}
               {movie.Poster && movie.Poster !== "N/A" && (
@@ -166,6 +167,7 @@ function SearchPage() {
                   Add to watched
                 </button>
               </div>
+              <ChevronRight className="ml-auto h-8 w-8 text-slate-500 transition-transform group-hover:translate-x-1" />
             </article>
           ))}
         </section>
