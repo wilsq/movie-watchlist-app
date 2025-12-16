@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 function MovieModal({ movieId, onClose }) {
   const [movieDetails, setMovieDetails] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -14,7 +16,7 @@ function MovieModal({ movieId, onClose }) {
       setMovieDetails(null);
 
       try {
-        const res = await fetch(`http://localhost:5000/api/movie/${movieId}`);
+        const res = await fetch(`${API_BASE}/api/movie/${movieId}`);
         const data = await res.json();
 
         if (!res.ok) {
