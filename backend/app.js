@@ -11,7 +11,12 @@ dotenv.config();
 const app = express();
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "https://movie-watchlist.com",
+      "https://www.movie-watchlist.com",
+    ],
+
     credentials: true,
   })
 );
