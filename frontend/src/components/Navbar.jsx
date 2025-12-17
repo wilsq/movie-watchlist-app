@@ -15,7 +15,9 @@ export default function Navbar() {
 
   return (
     <nav className="bg-gray-900 text-white px-6 py-4 flex items-center justify-between">
-      <div className="text-xl font-bold tracking-wide">Movie Watchlist</div>
+      <Link to="/" className="text-xl font-bold tracking-wide">
+        Movie Watchlist
+      </Link>
 
       <div className="flex items-center gap-6 text-lg">
         <Link to="/" className="hover:text-gray-300 transition-colors">
