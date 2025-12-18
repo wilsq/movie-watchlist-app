@@ -5,8 +5,6 @@ dotenv.config();
 
 const { Pool } = pkg;
 
-const isProduction = process.env.NODE_ENV === "production";
-
 // Connection Pool
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -14,7 +12,7 @@ const pool = new Pool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  ssl: isProduction ? { rejectUnauthorized: false } : false,
+  ssl: { rejectUnauthorized: false },
 });
 
 export async function query(text, params) {
