@@ -1,10 +1,22 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-// import { query } from "./db.js";
-// import bcrypt from "bcrypt";
-// import jwt from "jsonwebtoken";
-// import { requireAuth } from "./middleware/auth.js";
+import { query } from "./db.js";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { requireAuth } from "./middleware/auth.js";
+import {
+  LoginResponse,
+  RegisterRequestBody,
+  RegisterResponse,
+  LoginRequestBody,
+} from "./types/auth";
+import { RequestHandler } from "express";
+import {
+  WatchedMovie,
+  AddWatchedMovieBody,
+  WatchedMovieRow,
+} from "./types/movies.js";
 
 dotenv.config();
 
@@ -46,89 +58,103 @@ app.get("/api/health", (req, res) => {
 //   }
 // });
 
-// // REGISTER
-// app.post("/api/auth/register", async (req, res) => {
-//   const { email, password } = req.body;
+// REGISTER
 
-//   // Validointi
-//   if (!email || !password) {
-//     return res.status(400).json({ error: "Missing email or password" });
-//   }
+const registerHandler: RequestHandler = async (req, res) => {
+  const { email, password } = req.body as RegisterRequestBody;
 
-//   if (password.length < 8) {
-//     return res
-//       .status(400)
-//       .json({ error: "Password must be at least 8 characters" });
-//   }
+  // Validointi
+  if (!email || !password) {
+    res.status(400).json({ error: "Missing email or password" });
+    return;
+  }
 
-//   try {
-//     const existing = await query(`SELECT 1 FROM users WHERE email = $1`, [
-//       email,
-//     ]);
-//     if (existing.rowCount > 0) {
-//       return res.status(409).json({ error: "Email already in use" });
-//     }
+  if (password.length < 8) {
+    res.status(400).json({ error: "Password must be at least 8 characters" });
+    return;
+  }
 
-//     // Hashataan salasana
-//     const passwordHash = await bcrypt.hash(password, 10);
+  try {
+    const existing = await query(`SELECT 1 FROM users WHERE email = $1`, [
+      email,
+    ]);
+    if (existing.rowCount > 0) {
+      res.status(409).json({ error: "Email already in use" });
+      return;
+    }
 
-//     // Tallennetaan tietokantaan
-//     const result = await query(
-//       `INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email, created_at`,
-//       [email, passwordHash]
-//     );
+    //     // Hashataan salasana
+    const passwordHash = await bcrypt.hash(password, 10);
 
-//     return res.status(201).json(result.rows[0]);
-//   } catch (err) {
-//     console.error("Register error: ", err);
-//     return res.status(500).json({ error: "Failed to register" });
-//   }
-// });
+    //     // Tallennetaan tietokantaan
+    const result = await query(
+      `INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email, created_at`,
+      [email, passwordHash]
+    );
 
-// // LOGIN
-// app.post("/api/auth/login", async (req, res) => {
-//   const { email, password } = req.body;
+    res.status(201).json(result.rows[0]);
+    return;
+  } catch (err) {
+    console.error("Register error: ", err);
+    res.status(500).json({ error: "Failed to register" });
+    return;
+  }
+};
 
-//   if (!email || !password) {
-//     return res.status(400).json({ error: "Missing email or password" });
-//   }
+app.post("/api/auth/register", registerHandler);
 
-//   try {
-//     // Haetaan käyttäjä
-//     const result = await query(
-//       `SELECT id, email, password_hash FROM users WHERE email = $1`,
-//       [email]
-//     );
+// LOGIN
+const loginHandler: RequestHandler = async (req, res) => {
+  const { email, password } = req.body as LoginRequestBody;
 
-//     if (result.rowCount === 0) {
-//       return res.status(401).json({ error: "Invalid credentials" });
-//     }
+  if (!email || !password) {
+    res.status(400).json({ error: "Missing email or password" });
+    return;
+  }
 
-//     // Tallennetaan user variableen
-//     const user = result.rows[0];
+  try {
+    // Haetaan käyttäjä
+    const result = await query(
+      `SELECT id, email, password_hash FROM users WHERE email = $1`,
+      [email]
+    );
 
-//     // Verrataan salasanaa hashin kanssa
-//     const ok = await bcrypt.compare(password, user.password_hash);
-//     if (!ok) {
-//       return res.status(401).json({ error: "Invalid credentials" });
-//     }
+    if (result.rowCount === 0) {
+      res.status(401).json({ error: "Invalid credentials" });
+      return;
+    }
 
-//     // Luodaan JWT Token
-//     const secret = process.env.JWT_SECRET;
-//     if (!secret) {
-//       return res.status(500).json({ error: "JWT_SECRET is not set" });
-//     }
+    // Tallennetaan user variableen
+    const user = result.rows[0] as { id: number; password_hash: string };
 
-//     const token = jwt.sign({ id: user.id }, secret, {
-//       expiresIn: "7d",
-//     });
+    // Verrataan salasanaa hashin kanssa
+    const ok = await bcrypt.compare(password, user.password_hash);
+    if (!ok) {
+      res.status(401).json({ error: "Invalid credentials" });
+      return;
+    }
 
-//     return res.json({ token });
-//   } catch (err) {
-//     console.error("Login error: ", err);
-//     return res.status(500).json({ error: "Failed to login" });
-//   }
-// });
+    // Luodaan JWT Token
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      res.status(500).json({ error: "JWT_SECRET is not set" });
+      return;
+    }
+
+    const token = jwt.sign({ id: user.id }, secret, {
+      expiresIn: "7d",
+    });
+
+    res.json({ token });
+    return;
+  } catch (err) {
+    console.error("Login error: ", err);
+    res.status(500).json({ error: "Failed to login" });
+    return;
+  }
+};
+
+app.post("/api/auth/login", loginHandler);
 
 // // OMDB-hakureitti
 // app.get("/api/search", async (req, res) => {
@@ -188,30 +214,37 @@ app.get("/api/health", (req, res) => {
 //   }
 // });
 
-// // Hae katsotut
-// app.get("/api/watched", requireAuth, async (req, res) => {
-//   try {
-//     const userId = req.user.id;
+// Hae katsotut
+const getWatchedHandler: RequestHandler = async (req, res) => {
+  const userId = req.user?.id;
 
-//     const result = await query(
-//       `SELECT * FROM watched_movies WHERE user_id = $1 ORDER BY added_at DESC`,
-//       [userId]
-//     );
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
 
-//     const movies = result.rows.map((row) => ({
-//       id: row.imdb_id,
-//       title: row.title,
-//       year: row.year,
-//       poster: row.poster,
-//       addedAt: row.added_at,
-//     }));
+  try {
+    const result = (await query(
+      `SELECT * FROM watched_movies WHERE user_id = $1 ORDER BY added_at DESC`,
+      [userId]
+    )) as { rows: WatchedMovieRow[] };
 
-//     res.json(movies);
-//   } catch (err) {
-//     console.error("Error loading watched movies", err);
-//     res.status(500).json({ error: "Failed to load watched movies" });
-//   }
-// });
+    const movies: WatchedMovie[] = result.rows.map((row) => ({
+      id: row.imdb_id,
+      title: row.title,
+      year: row.year,
+      poster: row.poster,
+      addedAt: row.added_at,
+    }));
+
+    res.json(movies);
+  } catch (err) {
+    console.error("Error loading watched movies", err);
+    res.status(500).json({ error: "Failed to load watched movies" });
+  }
+};
+
+app.get("/api/watched", requireAuth, getWatchedHandler);
 
 // // Lisää katsottu
 // app.post("/api/watched", requireAuth, async (req, res) => {
