@@ -17,6 +17,7 @@ import {
   AddWatchedMovieBody,
   WatchedMovieRow,
 } from "./types/movies.js";
+import { OmdbMovieResponse, OmdbSearchResponse } from "./types/omdb.js";
 
 dotenv.config();
 
@@ -156,63 +157,81 @@ const loginHandler: RequestHandler = async (req, res) => {
 
 app.post("/api/auth/login", loginHandler);
 
-// // OMDB-hakureitti
-// app.get("/api/search", async (req, res) => {
-//   const query = req.query.q;
-//   const apiKey = process.env.OMDB_API_KEY;
+// OMDB-hakureitti
+const omdbSearchHandler: RequestHandler = async (req, res) => {
+  const q = req.query.q as string | undefined;
+  const apiKey = process.env.OMDB_API_KEY;
 
-//   if (!query) {
-//     return res.status(400).json({ error: "Missing query parameter q" });
-//   }
+  if (!q) {
+    res.status(400).json({ error: "Missing query parameter q" });
+    return;
+  }
 
-//   if (!apiKey) {
-//     return res.status(500).json({ error: "OMDB_API_KEY is not set in .env" });
-//   }
+  if (!apiKey) {
+    res.status(500).json({ error: "OMDB_API_KEY is not set in .env" });
+    return;
+  }
 
-//   try {
-//     const url = `https://www.omdbapi.com/?apikey=${apiKey}&s=${encodeURIComponent(
-//       query
-//     )}&type=movie`;
+  try {
+    const url = `https://www.omdbapi.com/?apikey=${apiKey}&s=${encodeURIComponent(
+      q
+    )}&type=movie`;
 
-//     const response = await fetch(url);
-//     const data = await response.json();
+    const response = await fetch(url);
+    const data = (await response.json()) as OmdbSearchResponse;
 
-//     if (data.Response === "False") {
-//       return res.status(404).json({ error: data.Error || "No movies found" });
-//     }
+    if (data.Response === "False") {
+      res.status(404).json({ error: data.Error || "No movies found" });
+      return;
+    }
 
-//     return res.json(data);
-//   } catch (err) {
-//     console.error("Error fetching OMDB:", err);
-//     return res.status(500).json({ error: "Failed to fetch from OMDB" });
-//   }
-// });
+    res.json(data);
+    return;
+  } catch (err) {
+    console.error("Error fetching OMDB:", err);
+    res.status(500).json({ error: "Failed to fetch from OMDB" });
+    return;
+  }
+};
+
+app.get("/api/search", omdbSearchHandler);
 
 // // Yksittäinen elokuva haku OMDB:stä
-// app.get("/api/movie/:id", async (req, res) => {
-//   const { id } = req.params;
-//   const apiKey = process.env.OMDB_API_KEY;
+const omdbMovieHandler: RequestHandler = async (req, res) => {
+  const { id } = req.params;
+  const apiKey = process.env.OMDB_API_KEY;
 
-//   if (!apiKey) {
-//     return res.status(500).json({ error: "OMDB_API_KEY is not set in .env" });
-//   }
+  if (!apiKey) {
+    res.status(500).json({ error: "OMDB_API_KEY is not set in .env" });
+    return;
+  }
 
-//   try {
-//     const url = `https://www.omdbapi.com/?apikey=${apiKey}&i=${id}&plot=short`;
+  if (!id) {
+    res.status(400).json({ error: "Missing movie id" });
+    return;
+  }
 
-//     const response = await fetch(url);
-//     const data = await response.json();
+  try {
+    const url = `https://www.omdbapi.com/?apikey=${apiKey}&i=${id}&plot=short`;
 
-//     if (data.Response === "False") {
-//       return res.status(404).json({ error: "Movie not found" });
-//     }
+    const response = await fetch(url);
+    const data = (await response.json()) as OmdbSearchResponse;
 
-//     return res.json(data);
-//   } catch (err) {
-//     console.error("Error fetching detailed movie:", err);
-//     return res.status(500).json({ error: "Failed to fetch movie details" });
-//   }
-// });
+    if (data.Response === "False") {
+      res.status(404).json({ error: data.Error ?? "Movie not found" });
+      return;
+    }
+
+    res.json(data);
+    return;
+  } catch (err) {
+    console.error("Error fetching detailed movie:", err);
+    res.status(500).json({ error: "Failed to fetch movie details" });
+    return;
+  }
+};
+
+app.get("/api/movie/:id", omdbMovieHandler);
 
 // Hae katsotut
 const getWatchedHandler: RequestHandler = async (req, res) => {
@@ -246,56 +265,92 @@ const getWatchedHandler: RequestHandler = async (req, res) => {
 
 app.get("/api/watched", requireAuth, getWatchedHandler);
 
-// // Lisää katsottu
-// app.post("/api/watched", requireAuth, async (req, res) => {
-//   const userId = req.user.id; // Myöhemmin authista.
+// Lisää katsottu
+const addWatchedHandler: RequestHandler = async (req, res) => {
+  const userId = req.user?.id; // Myöhemmin authista.
 
-//   const { imdbID, title, year, poster } = req.body;
+  const { imdbID, title, year, poster } = req.body as AddWatchedMovieBody;
 
-//   if (!imdbID || !title) {
-//     return res.status(400).json({ error: "Missing imdbID or title" });
-//   }
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
 
-//   try {
-//     const exists = await query(
-//       `SELECT 1 FROM watched_movies WHERE user_id = $1 AND imdb_id = $2`,
-//       [userId, imdbID]
-//     );
+  if (!imdbID || !title) {
+    res.status(400).json({ error: "Missing imdbID or title" });
+    return;
+  }
 
-//     if (exists.rowCount > 0) {
-//       return res.status(409).json({ error: "Movie already exists" });
-//     }
+  try {
+    const exists = await query(
+      `SELECT 1 FROM watched_movies WHERE user_id = $1 AND imdb_id = $2`,
+      [userId, imdbID]
+    );
 
-//     const result = await query(
-//       `INSERT INTO watched_movies (user_id, imdb_id, title, year, poster) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-//       [userId, imdbID, title, year, poster]
-//     );
-//     res.status(201).json(result.rows[0]);
-//   } catch (err) {
-//     console.error("Error inserting movie", err);
-//     res.status(500).json({ error: "Failed to add movie" });
-//   }
-// });
+    if (exists.rowCount > 0) {
+      res.status(409).json({ error: "Movie already exists" });
+      return;
+    }
 
-// // Poista elokuva
-// app.delete("/api/watched/:id", requireAuth, async (req, res) => {
-//   const userId = req.user.id;
-//   const movieId = req.params.id;
+    const result = (await query(
+      `INSERT INTO watched_movies (user_id, imdb_id, title, year, poster) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [userId, imdbID, title, year ?? null, poster ?? null]
+    )) as { rows: WatchedMovieRow[] };
 
-//   try {
-//     const result = await query(
-//       "DELETE FROM watched_movies WHERE user_id = $1 AND imdb_id = $2",
-//       [userId, movieId]
-//     );
+    const row = result.rows[0];
 
-//     if (result.rowCount === 0) {
-//       return res.status(404).json({ error: "Movie not found" });
-//     }
-//     res.status(204).send();
-//   } catch (err) {
-//     console.error("Error deleting movie", err);
-//     res.status(500).json({ error: "Failed to delete movie" });
-//   }
-// });
+    const movie: WatchedMovie = {
+      id: row.imdb_id,
+      title: row.title,
+      year: row.year,
+      poster: row.poster,
+      addedAt: row.added_at,
+    };
+    res.status(201).json(movie);
+    return;
+  } catch (err) {
+    console.error("Error inserting movie", err);
+    res.status(500).json({ error: "Failed to add movie" });
+    return;
+  }
+};
+
+app.post("/api/watched", requireAuth, addWatchedHandler);
+
+// Poista elokuva
+const deleteWatchedHandler: RequestHandler = async (req, res) => {
+  const userId = req.user?.id;
+  const movieId = req.params.id;
+
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  if (!movieId) {
+    res.status(400).json({ error: "Missing movie id" });
+    return;
+  }
+
+  try {
+    const result = await query(
+      "DELETE FROM watched_movies WHERE user_id = $1 AND imdb_id = $2",
+      [userId, movieId]
+    );
+
+    if (result.rowCount === 0) {
+      res.status(404).json({ error: "Movie not found" });
+      return;
+    }
+    res.status(204).send();
+    return;
+  } catch (err) {
+    console.error("Error deleting movie", err);
+    res.status(500).json({ error: "Failed to delete movie" });
+    return;
+  }
+};
+
+app.delete("/api/watched/:id", requireAuth, deleteWatchedHandler);
 
 export default app;
