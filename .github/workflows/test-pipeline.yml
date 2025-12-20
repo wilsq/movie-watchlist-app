@@ -1,0 +1,38 @@
+name: Elokuva-projekti TS-Tarkistus
+
+# 1. MILLOIN AJETAAN?
+on:
+  push:
+    branches: ["typescript-migration"]
+  pull_request:
+    branches: ["typescript-migration"]
+
+# 2. MITÄ TEHDÄÄN?
+jobs:
+  tarkistus:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Haetaan koodi GitHubista virtuaalikoneelle
+      - name: Checkout koodi
+        uses: actions/checkout@v4
+
+      # Asennetaan Node.js
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # FRONTEND: Asennus ja Build
+      - name: Build Frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      # BACKEND: Asennus ja Build
+      - name: Build Backend
+        run: |
+          cd backend
+          npm install
+          npm run build

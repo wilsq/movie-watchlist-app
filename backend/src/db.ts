@@ -15,7 +15,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-export async function query(text, params) {
+export async function query(text: string, params?: any[]) {
   return pool.query(text, params);
 }
 
