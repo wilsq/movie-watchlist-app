@@ -79,7 +79,7 @@ const registerHandler: RequestHandler = async (req, res) => {
     const existing = await query(`SELECT 1 FROM users WHERE email = $1`, [
       email,
     ]);
-    if (existing.rowCount > 0) {
+    if (existing?.rowCount && existing.rowCount > 0) {
       res.status(409).json({ error: "Email already in use" });
       return;
     }
@@ -287,7 +287,7 @@ const addWatchedHandler: RequestHandler = async (req, res) => {
       [userId, imdbID]
     );
 
-    if (exists.rowCount > 0) {
+    if (exists?.rowCount && exists.rowCount > 0) {
       res.status(409).json({ error: "Movie already exists" });
       return;
     }
