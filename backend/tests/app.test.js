@@ -1,5 +1,5 @@
 import request from "supertest";
-import app, { _resetWatchedMovies } from "../app.js";
+import app, { _resetWatchedMovies } from "../app";
 
 beforeEach(() => {
   _resetWatchedMovies();
