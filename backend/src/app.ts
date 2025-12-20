@@ -38,10 +38,12 @@ app.use(express.json());
 
 const DEMO_USER_ID = 1;
 
-// // Helper funktio testejä varten
-// export function _resetWatchedMovies() {
-//   watchedMovies = [];
-// }
+let watchedMovies: any[] = [];
+
+// Helper funktio testejä varten
+export function _resetWatchedMovies() {
+  watchedMovies = [];
+}
 
 // Health-check
 app.get("/api/health", (req, res) => {

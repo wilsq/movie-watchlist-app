@@ -3,14 +3,15 @@
     "target": "ES2022",
     "module": "ES2022",
     "moduleResolution": "Bundler",
-    "rootDir": "src",
+    "rootDir": "./",
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "types": ["node"],
+    "types": ["node", "jest"],
     "lib": ["ES2022", "DOM"]
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "tests/**/*.ts"]
 }
