@@ -37,6 +37,11 @@ jobs:
         with:
           node-version: "20"
 
+      # Tehdään testi taulut tietokantaan
+      - name: Initialize Database Scheman
+        run: |
+          PGPASSWORD=testpassword psql -h localhost -U testuser -d testdb -f backend/db/schema.sql
+
       # FRONTEND: Asennus ja Build
       - name: Build Frontend
         run: |
