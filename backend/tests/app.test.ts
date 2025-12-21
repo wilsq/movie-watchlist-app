@@ -1,11 +1,16 @@
 import request from "supertest";
 import app, { _resetWatchedMovies } from "../src/app";
 import jwt from "jsonwebtoken";
+import pool from "../src/db";
 
 const testToken = jwt.sign({ id: 1 }, process.env.JWT_SECRET || "test-secret");
 
-beforeEach(() => {
-  _resetWatchedMovies();
+beforeEach(async () => {
+  await pool.query("TRUNCATE TABLE watched_movies CASCADE");
+});
+
+afterAll(async () => {
+  await pool.end();
 });
 
 // HEALTH
