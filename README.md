@@ -1,5 +1,7 @@
 # 🎬 Movie Watchlist
 
+![CI Pipeline](https://github.com/wilsq/movie-watchlist-app/actions/workflows/test-pipeline.yml/badge.svg?branch=typescript-migration)
+
 Moderni full stack -web-sovellus elokuvien etsimiseen ja oman katsottujen elokuvien listan hallintaan.
 Sovellus on rakennettu ja deployattu tuotantovalmiina AWS-ympäristöön.
 
@@ -75,6 +77,22 @@ Projekti on tehty oppimis- ja portfolio­tarkoituksessa, mutta se noudattaa oike
 - AWS RDS
 
 - Eri tietokannat kehitykselle ja tuotannolle
+
+### CI/CD
+
+- Github Actions
+
+## 🛠 Käynnissä oleva kehitys: TypeScript-migraatio & CI/CD
+
+Projektia parannetaan parhaillaan siirtämällä koko sovellus **TypeScriptiin** ja ottamalla käyttöön automaattinen **CI/CD-putki**. Tämä kehitystyö on nähtävissä omassa [typescript-migration](../../tree/typescript-migration) -haarassaan.
+
+### Mitä tämä vaihe sisältää:
+
+- **Tyypitysturvallisuus**: Backendin täysimittainen TypeScript-uudelleenkirjoitus (Node.js/Express).
+- **Automatisoitu testausputki**: GitHub Actions -työnkulku, joka tarkistaa jokaisen pushin kohdalla:
+  - TypeScript-koodin kääntymisen (Build check).
+  - Integraatiotestit PostgreSQL-tietokantaa vasten (GitHub Actions Services).
+- **Tietokantainfra testeissä**: Putki pystyttää automaattisesti eristetyn Postgres-kontin, ajaa SQL-skeemat ja suorittaa testit puhtaalla datalla.
 
 ## Arkkitehtuuri
 
