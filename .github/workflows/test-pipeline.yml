@@ -40,7 +40,10 @@ jobs:
       # Tehdään testi taulut tietokantaan
       - name: Initialize Database Scheman
         run: |
+          # Ajetaan ensin skeema
           PGPASSWORD=testpassword psql -h localhost -U testuser -d testdb -f backend/db/schema.sql
+          # Lisätään testikäyttäjä, jonka ID on 1
+          PGPASSWORD=testpassword psql -h localhost -U testuser -d testdb -c "INSERT INTO users (id, email, password_hash) VALUES (1, 'test@test.com', 'hashed_pass') ON CONFLICT DO NOTHING;"
 
       # FRONTEND: Asennus ja Build
       - name: Build Frontend

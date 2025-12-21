@@ -2,10 +2,7 @@ import request from "supertest";
 import app, { _resetWatchedMovies } from "../src/app";
 import jwt from "jsonwebtoken";
 
-const testToken = jwt.sign(
-  { id: "test-user" },
-  process.env.JWT_SECRET || "test-secret"
-);
+const testToken = jwt.sign({ id: 1 }, process.env.JWT_SECRET || "test-secret");
 
 beforeEach(() => {
   _resetWatchedMovies();
