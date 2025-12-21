@@ -1,6 +1,6 @@
 # 🎬 Movie Watchlist
 
-![CI Pipeline](https://github.com/wilsq/movie-watchlist-app/actions/workflows/test-pipeline.yml/badge.svg?branch=typescript-migration)
+[![CI Pipeline](https://github.com/wilsq/movie-watchlist-app/actions/workflows/test-pipeline.yml/badge.svg?branch=typescript-migration)](https://github.com/wilsq/movie-watchlist-app/tree/typescript-migration)
 
 Moderni full stack -web-sovellus elokuvien etsimiseen ja oman katsottujen elokuvien listan hallintaan.
 Sovellus on rakennettu ja deployattu tuotantovalmiina AWS-ympäristöön.
