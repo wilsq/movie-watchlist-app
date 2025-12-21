@@ -51,15 +51,23 @@ app.get("/api/health", (req, res) => {
 });
 
 // DB-health: Kokeillaan yhteys postgresiin
-// app.get("/api/db-health", async (req, res) => {
-//   try {
-//     const result = await query("SELECT NOW() as now");
-//     res.json({ ok: true, now: result.rows[0].now });
-//   } catch (err) {
-//     console.error("DB health check failed:", err);
-//     res.status(500).json({ ok: false, error: err.message, code: err.code });
-//   }
-// });
+const dbHealthHadler: RequestHandler = async (req, res) => {
+  try {
+    const result = await query("SELECT NOW() as now");
+    res.json({ ok: true, now: result?.rows[0]?.now });
+    return;
+  } catch (err: any) {
+    console.error("DB health check failed:", err);
+    res.status(500).json({
+      ok: false,
+      error: err.message || "Unknown error",
+      code: err.code,
+    });
+    return;
+  }
+};
+
+app.get("/api/db-health", dbHealthHadler);
 
 // REGISTER
 
@@ -269,7 +277,7 @@ app.get("/api/watched", requireAuth, getWatchedHandler);
 
 // Lisää katsottu
 const addWatchedHandler: RequestHandler = async (req, res) => {
-  const userId = req.user?.id; // Myöhemmin authista.
+  const userId = req.user?.id;
 
   const { imdbID, title, year, poster } = req.body as AddWatchedMovieBody;
 
