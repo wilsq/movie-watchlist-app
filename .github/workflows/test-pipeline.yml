@@ -12,6 +12,20 @@ jobs:
   tarkistus:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_DB: testdb
+          POSTGRES_PASSWORD: testpassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       # Haetaan koodi GitHubista virtuaalikoneelle
       - name: Checkout koodi
@@ -39,4 +53,10 @@ jobs:
           npm test
         env:
           NODE_ENV: "test"
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: testuser
+          DB_PASSWORD: testpassword
+          DB_NAME: testdb
+          PGSSLMODE: disable
           JWT_SECRET: testaus-salaisuus
