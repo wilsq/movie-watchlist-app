@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import MovieModal from "../components/MovieModal";
 import { useToast } from "../components/ToastContext";
+import { WatchedMovie } from "../types/movies";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 function WatchedPage() {
-  const [watched, setWatched] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [watched, setWatched] = useState<WatchedMovie[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
 
-  const [selectedMovieId, setSelectedMovieId] = useState(null);
+  const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
 
   const { showToast } = useToast();
 
@@ -21,15 +22,21 @@ function WatchedPage() {
         const res = await fetch(`${API_BASE}/api/watched`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const data = await res.json();
+        const data: WatchedMovie[] | { error: string } = await res.json();
 
         if (!res.ok) {
-          throw new Error(data.error || "Failed to load watched movies");
+          const message =
+            "error" in data ? data.error : "Failed to load watched movies";
+          throw new Error(message);
         }
 
-        setWatched(data);
+        setWatched(data as WatchedMovie[]);
       } catch (err) {
-        setError(err.message || "Unexpected error");
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Unexpected error");
+        }
       } finally {
         setLoading(false);
       }
@@ -38,7 +45,7 @@ function WatchedPage() {
     fetchWatched();
   }, []);
 
-  const removeMovie = async (id, title) => {
+  const removeMovie = async (id: string, title: string) => {
     const token = localStorage.getItem("token");
 
     try {
@@ -55,7 +62,10 @@ function WatchedPage() {
       showToast(`Removed "${title}" from watched`, "success");
     } catch (err) {
       console.error(err);
-      showToast(err.message || "Failed to remove movie", "error");
+
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to remove movie";
+      showToast(errorMessage, "error");
     }
   };
 
@@ -83,7 +93,7 @@ function WatchedPage() {
           >
             {/* Poster */}
             <img
-              src={movie.poster}
+              src={movie.poster ?? undefined}
               alt={movie.title}
               className="h-24 w-16 object-cover rounded"
             />
