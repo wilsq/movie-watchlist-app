@@ -12,6 +12,8 @@ Sovellusta voi testata ilman rekisteröitymistä seuraavilla tunnuksilla:
 
 Demo-käyttäjä on tarkoitettu vain sovelluksen testaamiseen.
 
+💡 Huom: Kehitysympäristön kustannusoptimoinnin vuoksi backend-palvelut ja tietokanta ovat aktiivisena päivittäin klo 07:00–21:00 (EET). Muina aikoina API-kutsut saattavat palauttaa virheen.
+
 ## 📌 Mikä tämä projekti on?
 
 Movie Watchlist on henkilökohtainen elokuvasovellus, jossa käyttäjä voi:
@@ -76,15 +78,14 @@ Projekti on tehty oppimis- ja portfolio­tarkoituksessa, mutta se noudattaa oike
 
 - Eri tietokannat kehitykselle ja tuotannolle
 
-## Arkkitehtuuri
+## Arkkitehtuuri & Pilvihallinta
 
-Frontend (Amplify) ja backend (Elastic Beanstalk) deployataan erikseen
-
-Ympäristömuuttujat eriytetty (dev / prod)
-
-HTTPS koko sovelluksessa (ACM + Route 53)
-
-Load Balancer ja health checkit
+- **Frontend:** Deployattu AWS Amplifyn kautta.
+- **Backend:** Skaalautuva Elastic Beanstalk -ympäristö.
+- **Tietoturva:** HTTPS-suojaus koko sovelluksessa (ACM + Route 53).
+- **Infrastruktuuri:** Load Balancer ja Health Checkit varmistamassa korkean käytettävyyden.
+- **Kustannusoptimointi:** \* RDS-tietokanta on automatisoitu sammumaan yöksi käyttämällä **AWS Systems Manager (SSM) Resource Scheduleria**.
+  - Automaatio perustuu tägipohjaiseen hallintaan (`schedule: true`), mikä vähentää kehitysympäristön RDS-kustannuksia huomattavasti.
 
 ### Arkkitehtuurikaavio
 
